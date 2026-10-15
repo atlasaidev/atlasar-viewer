@@ -67,7 +67,8 @@ export default {
     async mount(stage, o, ctx) {
         await loadModelViewer();
         const mv = document.createElement('model-viewer');
-        mv.className = 'atlasar-model-viewer';
+        mv.className = ['atlasar-model-viewer', o.viewerClass].filter(Boolean).join(' ');
+        if (o.viewerId) mv.id = o.viewerId;
         apply(mv, o);
         const custom = arButton(o);
         if (custom) mv.append(custom);

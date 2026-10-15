@@ -12,7 +12,7 @@
  * 360° images and opens the phone's own AR app (see renderers/).
  */
 import { defineElement, AtlasARViewerElement } from './element.js';
-import { configure as configureAssets, assetsBase, cloudBase } from './assets.js';
+import { configure as configureAssets, assetsBase, cloudBase, loadModelViewer } from './assets.js';
 import { capabilities } from './capabilities.js';
 import { registerRenderer } from './renderers/index.js';
 import { use, featureNames } from './features.js';
@@ -55,6 +55,7 @@ export const AtlasAR = {
     use,
     registerRenderer,
     setTryonPipeline,
+    loadModelViewer,
     capabilities,
     features: featureNames,
     defaults: DEFAULTS,

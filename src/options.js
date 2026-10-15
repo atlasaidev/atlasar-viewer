@@ -65,6 +65,11 @@ export const DEFAULTS = Object.freeze({
     // 360° images (one per angle, in order) for browsers that cannot show 3D.
     turntable: [],
 
+    // AR-114: an id and extra classes for the inner <model-viewer> (the WordPress plugin keeps its
+    // old ids and its atlas_ar_model_viewer class, so existing CSS and scripts still find it).
+    viewerId: '',
+    viewerClass: '',
+
     // Where the SDK's files and the AtlasAR Cloud API live (set automatically from the script URL).
     assetsBase: '',
     apiBase: '',
@@ -225,6 +230,8 @@ export function normalize(...layers) {
     o.model = /^mdl_[A-Za-z0-9]{10,40}$/.test(String(raw.model || '').trim()) ? String(raw.model).trim() : '';
     for (const k of ['alt', 'arButtonText', 'qrBrand', 'buttonLabel', 'title']) o[k] = String(raw[k] ?? '').slice(0, 200) || DEFAULTS[k];
     o.css = String(raw.css || '').slice(0, 5000);
+    o.viewerId = /^[A-Za-z][\w-]{0,99}$/.test(String(raw.viewerId || '')) ? String(raw.viewerId) : '';
+    o.viewerClass = String(raw.viewerClass || '').split(/\s+/).filter((c) => /^[A-Za-z_][\w-]{0,79}$/.test(c)).slice(0, 10).join(' ');
     const frames = Array.isArray(raw.turntable) ? raw.turntable : String(raw.turntable || '').split(/[\s,]+/);
     o.turntable = frames.map(safeUrl).filter(Boolean).slice(0, 120);
     // Premium data: JSON from an attribute, or the value from code; size-capped, never interpreted here.
