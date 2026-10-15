@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AtlasAR viewer SDK examples</title>
+<link rel="stylesheet" href="examples.css">
+<script src="../atlasar.js" defer></script>
+<script src="examples.js" defer></script>
+</head>
+<body>
+<main>
+  <h1>AtlasAR viewer SDK</h1>
+  <p class="lede">The same viewer as the AtlasAR WordPress plugin, for any website. Add <code>?model=mdl_…</code> to this page's address to show one of your AtlasAR Cloud models, or <code>?src=</code> with a GLB link.</p>
+
+  <section>
+    <h2>1. Inline viewer</h2>
+    <pre><code>&lt;atlasar-viewer model="mdl_…"&gt;&lt;/atlasar-viewer&gt;</code></pre>
+    <atlasar-viewer class="demo" data-demo="inline" height="420px" load="immediate">
+      <img src="" alt="3D model" class="no-js-fallback">
+    </atlasar-viewer>
+  </section>
+
+  <section>
+    <h2>2. Button that opens a popup</h2>
+    <pre><code>&lt;atlasar-viewer model="mdl_…" display="popup" button-label="View in 3D"&gt;&lt;/atlasar-viewer&gt;</code></pre>
+    <atlasar-viewer class="demo" data-demo="popup" display="popup" button-label="View in 3D"></atlasar-viewer>
+  </section>
+
+  <section>
+    <h2>3. Custom AR button, auto-rotate, loads on click</h2>
+    <pre><code>&lt;atlasar-viewer model="mdl_…" ar-button="custom" ar-button-text="See it in your room"
+    ar-button-background="#0f766e" auto-rotate load="interaction"&gt;&lt;/atlasar-viewer&gt;</code></pre>
+    <atlasar-viewer class="demo" data-demo="custom" ar-button="custom" ar-button-text="See it in your room" ar-button-background="#0f766e" auto-rotate load="interaction" height="380px"></atlasar-viewer>
+  </section>
+
+  <section>
+    <h2>4. Browsers that cannot show 3D</h2>
+    <p>Forced here with <code>renderer="fallback"</code>: the poster (or 360° images), and on a phone a "View in your room" link to its own AR app.</p>
+    <atlasar-viewer class="demo" data-demo="fallback" renderer="fallback" height="300px"></atlasar-viewer>
+  </section>
+
+  <section>
+    <h2>5. From JavaScript</h2>
+    <pre><code>const viewer = AtlasAR.mount('#from-code', { model: 'mdl_…', autoRotate: true });
+viewer.element.addEventListener('atlasar:ready', (e) =&gt; console.log(e.detail.renderer));</code></pre>
+    <div id="from-code"></div>
+    <p id="events" class="events" aria-live="polite"></p>
+  </section>
+</main>
+</body>
+</html>

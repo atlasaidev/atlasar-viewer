@@ -1,0 +1,45 @@
+{
+    "name": "@atlasaidev/atlasar-viewer",
+    "version": "0.1.0",
+    "description": "AtlasAR viewer SDK: show 3D models with AR and a virtual try-on on any website. Plain JavaScript (ES modules), the same viewer as the AtlasAR WordPress plugin.",
+    "type": "module",
+    "main": "./dist/atlasar.module.js",
+    "exports": {
+        ".": "./dist/atlasar.module.js",
+        "./script": "./dist/atlasar.js",
+        "./css": "./dist/atlasar.css"
+    },
+    "files": [
+        "dist",
+        "THIRD-PARTY-NOTICES.md"
+    ],
+    "sideEffects": true,
+    "scripts": {
+        "build": "node build.js"
+    },
+    "devDependencies": {
+        "@google/model-viewer": "3.5.0",
+        "esbuild": "0.28.2",
+        "meshoptimizer": "0.22.0",
+        "three": "0.163.0"
+    },
+    "keywords": [
+        "3d",
+        "ar",
+        "augmented-reality",
+        "model-viewer",
+        "glb",
+        "usdz",
+        "webxr",
+        "virtual-try-on",
+        "web-component"
+    ],
+    "homepage": "https://github.com/atlasaidev/atlasar-viewer#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/atlasaidev/atlasar-viewer.git"
+    },
+    "bugs": "https://github.com/atlasaidev/atlasar-viewer/issues",
+    "author": "AtlasAiDev (https://atlasaidev.com/)",
+    "license": "GPL-2.0-or-later"
+}
