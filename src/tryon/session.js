@@ -7,7 +7,6 @@
 import { addStyles } from '../features.js';
 import { setBase } from '../assets.js';
 import { createUI, CSS } from './ui.js';
-import { computeAnchor } from './anchors.js';
 import { productSprite } from './sprite.js';
 
 /**
@@ -53,17 +52,19 @@ function watermarked(src, watermark, hd) {
 }
 
 /**
- * @param {{ options, host, assetsBase, pipeline, returnFocus, emit }} args
+ * @param {{ options, category, assetsBase, pipeline, returnFocus, emit }} args
+ *   category: the registered try-on category (registry.js) — where the product sits on the body
  */
-export async function start({ options: o, assetsBase, pipeline, returnFocus, emit }) {
+export async function start({ options: o, category, assetsBase, pipeline, returnFocus, emit }) {
     setBase(`${assetsBase}atlasar.js`); // this bundle's own copy of the asset paths
     addStyles('atlasar-tryon', CSS, 'atlasar.css');
     const s = o.strings;
     const p = pipeline || {};
     const ui = createUI(o, { returnFocus });
-    const accessory = o.tryon === 'hat' ? 'hat' : 'glasses';
+    // The Premium 3D renderer knows two shapes (glasses, hat); every category maps to one of them.
+    const accessory = category.kind;
     const mode = `face-${accessory}`;
-    emit('tryon-open', { accessory });
+    emit('tryon-open', { accessory, category: category.name });
 
     if (!window.isSecureContext) return ui.showError(s.tryonInsecure);
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof Worker !== 'function' || typeof createImageBitmap !== 'function') {
@@ -92,16 +93,20 @@ export async function start({ options: o, assetsBase, pipeline, returnFocus, emi
     ui.video.addEventListener('loadedmetadata', fit);
     window.addEventListener('resize', fit);
 
-    const ctxInfo = { options: o, mode, accessory, glbSrc: o.src, calibration: o.tryonCalibration || null };
+    // emit: the pipeline reports through the same events (tryon-calibration-save, tryon-anatomy).
+    const ctxInfo = { options: o, mode, accessory, category: category.name, glbSrc: o.src, calibration: o.tryonCalibration || null, anatomy: o.tryonAnatomy || null, emit };
     if (typeof p.tools === 'function') {
         try { p.tools(ui.tools, ctxInfo); ui.tools.hidden = !ui.tools.childNodes.length; } catch (err) { console.warn('[AtlasAR] try-on tools failed', err); }
     }
     const spritePromise = productSprite(o.src);
     const worker = startWorker(assetsBase);
+    // AR-115: the tracker files from tryonModels (self-host or a CDN of the same MediaPipe version),
+    // else the SDK's own vendor/mediapipe.
+    const models = o.tryonModels || {};
     worker.postMessage({
         type: 'init',
-        wasmBase: `${assetsBase}vendor/mediapipe`,
-        modelUrl: `${assetsBase}vendor/mediapipe/face_landmarker.task`,
+        wasmBase: (models.wasmBase || `${assetsBase}vendor/mediapipe`).replace(/\/$/, ''),
+        modelUrl: models.face || `${assetsBase}vendor/mediapipe/face_landmarker.task`,
         options: { numFaces: p.numFaces || 1, facialMatrix: !!p.facialMatrix },
     });
 
@@ -136,7 +141,10 @@ export async function start({ options: o, assetsBase, pipeline, returnFocus, emi
         ctx.drawImage(ui.video, 0, 0, w, h);
         ctx.restore();
         if (landmarks) {
-            let anchor = sprite ? computeAnchor(landmarks, accessory, ui.canvas) : null;
+            let anchor = null;
+            if (sprite) {
+                try { anchor = category.anchor(landmarks, ui.canvas) || null; } catch (err) { console.warn(`[AtlasAR] try-on category "${category.name}" failed`, err); }
+            }
             if (anchor && typeof p.adjustAnchor === 'function') {
                 try { anchor = p.adjustAnchor(anchor, ctxInfo) || anchor; } catch { /* keep the default */ }
             }
@@ -168,8 +176,11 @@ export async function start({ options: o, assetsBase, pipeline, returnFocus, emi
 
     ui.shutter.addEventListener('click', () => {
         const a = document.createElement('a');
-        a.href = watermarked(ui.canvas, p.watermark !== false, !!p.hd);
-        a.download = `tryon-${Date.now()}.png`;
+        // The site may set watermark / HD itself (tryonWatermark / tryonHd); otherwise the pipeline decides.
+        const watermark = o.tryonWatermark !== null ? o.tryonWatermark : p.watermark !== false;
+        const hd = o.tryonHd !== null ? o.tryonHd : !!p.hd;
+        a.href = watermarked(ui.canvas, watermark, hd);
+        a.download = `tryon-${o.tryonSnapshotName ? `${o.tryonSnapshotName}-` : ''}${Date.now()}.png`;
         document.body.append(a);
         a.click();
         a.remove();

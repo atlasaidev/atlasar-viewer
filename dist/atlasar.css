@@ -84,7 +84,7 @@ html.atlasar-popup-open{overflow:hidden}
 .atlasar-tryon-consent p{margin:0 0 16px;font-size:15px;line-height:1.5;color:#e5e7eb}
 .atlasar-tryon-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .atlasar-tryon-allow,.atlasar-tryon-cancel{min-height:44px;padding:10px 18px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
-.atlasar-tryon-allow{border:0;background:#fff;color:#111}
+.atlasar-tryon-allow{border:0;background:var(--atlasar-accent,#fff);color:var(--atlasar-accent-text,#111)}
 .atlasar-tryon-cancel{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff}
 .atlasar-tryon-error{margin:0;padding:16px;background:#7f1d1d;color:#fff;font-size:14px}
 .atlasar-tryon-tools{padding:10px 14px;background:#1f2937}

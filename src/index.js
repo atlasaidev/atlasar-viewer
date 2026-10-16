@@ -18,6 +18,21 @@ import { registerRenderer } from './renderers/index.js';
 import { use, featureNames } from './features.js';
 import { DEFAULTS } from './options.js';
 import { setTryonPipeline } from './tryon/pipeline.js';
+import { ENGINE, register as registerTryon, names as tryonCategories } from './tryon/registry.js';
+import { open as openTryon } from './tryon/launch.js';
+
+/**
+ * AR-115: virtual try-on from any page or app.
+ *   AtlasAR.tryon.open({ src: 'glasses.glb', tryon: 'glasses' })   // from your own button
+ *   AtlasAR.tryon.register('earrings', { requires: 1, tracker: 'face', anchor(landmarks, canvas) {…} })
+ *   AtlasAR.tryon.categories()                                       // ['glasses', 'hat', …]
+ */
+export const tryon = Object.freeze({
+    ENGINE,
+    open: openTryon,
+    register: registerTryon,
+    categories: tryonCategories,
+});
 
 export const VERSION = '__ATLASAR_VERSION__';
 
@@ -55,6 +70,7 @@ export const AtlasAR = {
     use,
     registerRenderer,
     setTryonPipeline,
+    tryon,
     loadModelViewer,
     capabilities,
     features: featureNames,

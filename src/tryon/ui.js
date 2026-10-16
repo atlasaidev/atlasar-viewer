@@ -23,12 +23,26 @@ export const CSS = `
 .atlasar-tryon-consent p{margin:0 0 16px;font-size:15px;line-height:1.5;color:#e5e7eb}
 .atlasar-tryon-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .atlasar-tryon-allow,.atlasar-tryon-cancel{min-height:44px;padding:10px 18px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
-.atlasar-tryon-allow{border:0;background:#fff;color:#111}
+.atlasar-tryon-allow{border:0;background:var(--atlasar-accent,#fff);color:var(--atlasar-accent-text,#111)}
 .atlasar-tryon-cancel{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff}
 .atlasar-tryon-error{margin:0;padding:16px;background:#7f1d1d;color:#fff;font-size:14px}
 .atlasar-tryon-tools{padding:10px 14px;background:#1f2937}
 @media (max-width:600px){.atlasar-tryon{width:100vw;max-height:100vh;height:100vh;border-radius:0}}
 `;
+
+/** Black or white text, whichever reads better on the colour (WCAG relative luminance). */
+export function readableText(color) {
+    const probe = document.createElement('span');
+    probe.style.color = color;
+    document.body.append(probe);
+    const m = getComputedStyle(probe).color.match(/\d+(\.\d+)?/g) || [255, 255, 255];
+    probe.remove();
+    const [r, g, b] = m.slice(0, 3).map((v) => {
+        const c = Number(v) / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4 ? '#111' : '#fff';
+}
 
 export function createUI(o, { returnFocus } = {}) {
     const s = o.strings;
@@ -52,6 +66,12 @@ export function createUI(o, { returnFocus } = {}) {
         el('div', { class: 'atlasar-tryon-head' }, [el('h2', { class: 'atlasar-tryon-title' }, s.tryonTitle), x]),
         consent, stage, tools, error,
     ]);
+
+    // AR-115: the shop's button colour (tryonAccent) on the main button, with readable text on it.
+    if (o.tryonAccent) {
+        root.style.setProperty('--atlasar-accent', o.tryonAccent);
+        root.style.setProperty('--atlasar-accent-text', readableText(o.tryonAccent));
+    }
 
     let open = true;
     let consentAnswer = null;

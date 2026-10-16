@@ -3,6 +3,7 @@
  * mapping from <atlasar-viewer> attributes, and validation. Options come from, lowest first:
  * defaults → the AtlasAR Cloud model (when `model` is set) → attributes → options passed in code.
  */
+import { category } from './tryon/registry.js';
 
 export const DEFAULTS = Object.freeze({
     // What to show: an AtlasAR Cloud model id, or your own file URLs.
@@ -82,6 +83,15 @@ export const DEFAULTS = Object.freeze({
     tryonConsent: '',
     tryonCalibration: null,
     tryonCalibrate: false,
+    // AR-115: where the face tracker files are ({ face, wasmBase }; default: the SDK's vendor/mediapipe),
+    // snapshot overrides (null = the pipeline decides), a cached model measurement (Premium 3D),
+    // the snapshot file name and the try-on button colour.
+    tryonModels: null,
+    tryonWatermark: null,
+    tryonHd: null,
+    tryonAnatomy: null,
+    tryonSnapshotName: '',
+    tryonAccent: '',
 
     // Premium modules' data (atlasar-pro.js reads and checks it; the core only passes it on).
     // Attributes take JSON, e.g. hotspots='[{"position":"0 1 0","label":"Seat"}]'.
@@ -143,7 +153,7 @@ const ENUMS = {
     load: ['visible', 'interaction', 'immediate'],
     loading: ['auto', 'lazy', 'eager'],
     reveal: ['auto', 'manual'],
-    tryon: ['', 'glasses', 'hat'],
+    tryon: null, // AR-115: any registered category (tryon/registry.js); checked when the button is drawn
     renderer: ['auto', 'model-viewer', 'fallback'],
 };
 const AR_MODES = ['webxr', 'scene-viewer', 'quick-look'];
@@ -241,8 +251,17 @@ export function normalize(...layers) {
     o.variants = object(raw.variants);
     o.variant = String(raw.variant || '').slice(0, 100);
     // The plugin stored face-glasses / face-hat in ar_placement; both spellings work.
-    const t = String(raw.tryon || '').trim().replace(/^face-/, '');
-    o.tryon = ENUMS.tryon.includes(t) ? t : '';
+    const t = String(raw.tryon || '').trim().toLowerCase().replace(/^face-/, '');
+    o.tryon = category(t) ? t : ''; // AR-115: a registered category (core: glasses, hat; packs add more)
+    const models = object(raw.tryonModels);
+    o.tryonModels = models ? { face: safeUrl(models.face), wasmBase: safeUrl(models.wasmBase) } : null;
+    if (o.tryonModels && !o.tryonModels.face && !o.tryonModels.wasmBase) o.tryonModels = null;
+    const tri = (v) => (v === true || v === 'true' ? true : v === false || v === 'false' ? false : null);
+    o.tryonWatermark = tri(raw.tryonWatermark);
+    o.tryonHd = tri(raw.tryonHd);
+    o.tryonAnatomy = object(raw.tryonAnatomy);
+    o.tryonSnapshotName = String(raw.tryonSnapshotName || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 60);
+    o.tryonAccent = cssValue(raw.tryonAccent, '');
     o.tryonLabel = String(raw.tryonLabel ?? '').slice(0, 100) || DEFAULTS.tryonLabel;
     o.tryonConsent = String(raw.tryonConsent ?? '').slice(0, 500);
     o.tryonCalibration = object(raw.tryonCalibration);
